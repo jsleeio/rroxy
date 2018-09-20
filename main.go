@@ -12,6 +12,7 @@ import (
 func main() {
   // Forwards incoming requests to whatever location URL points to, adds proper forwarding headers
   listen := flag.String("listen", ":8000", "TCP port to listen on for requests")
+  retrypredicate := flag.String("retry-predicate", "IsNetworkError() && Attempts() < 2", "Retry predicate (see: go doc github.com/vulcand/oxy/buffer.Retry)")
   flag.Parse()
 
   fwd, _ := forward.New()
@@ -28,7 +29,7 @@ func main() {
     }
   }
 
-  buffer, err := buffer.New(lb, buffer.Retry(`IsNetworkError() && Attempts() < 2`))
+  buffer, err := buffer.New(lb, buffer.Retry(*retrypredicate))
   if err != nil {
     panic(err)
   }
